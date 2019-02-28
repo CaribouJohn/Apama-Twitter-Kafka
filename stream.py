@@ -36,6 +36,6 @@ stream = Stream(auth, twitterStream)
 # A particular set of users tweets can be filtered via follow - see tweepy API and 
 # https://developer.twitter.com/en/docs/tweets/filter-realtime/guides/basic-stream-parameters
 # for some of the options available.
-stream.filter(languages=["en"],track=["Republican"])
+stream.filter(languages=["en"],track=["Lady Gaga"])
 
 
