@@ -1,0 +1,49 @@
+# $Copyright (c) 2017-2018 Software AG, Darmstadt, Germany and/or Software AG USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates and/or their licensors.$
+# Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG
+#
+# This is a YAML configuration file. See the associated .properties file for an 
+# easy way to change the most commonly needed configuration settings. 
+#
+# When editing YAML files, be sure to use spaces (not tabs) for indentation. 
+# List entries are denoted by a line beginning with hyphen and space ("- ").
+# Map key and value pairs are separated by a colon and new line or space ("key: value").
+# Empty strings and those that need escaping should be surrounded by double-quotes ("...").
+# Apama replaces ${prop} substitution variables with the configured value of the 
+# specified property, taken from the command line or from .properties files. 
+#
+
+connectivityPlugins:
+  KafkaTransport:
+    classpath: ${APAMA_HOME}/lib/connectivity-kafka.jar
+    class: com.apama.kafka.ChainManager
+
+# The chain manager, responsible for the connection to Kafka
+dynamicChainManagers:
+  Kafka:
+    transport: KafkaTransport
+    managerConfig:
+      #channelPrefix: "Kafka:"
+      bootstrap.servers: ${Kafka_bootstrapServers}
+
+# Template from which a dynamic chain will be created for each channel handled by this plug-in
+dynamicChains:
+  KafkaChain:
+    - apama.eventMap:
+        # Towards-host messages will turn into EPL events of this type, although that type doesn't exist, it's just an example.
+        defaultEventType: TwitterEvent
+        
+        suppressLoopback: true
+    # Translates between Apama events in the correlator and JSON strings in Kafka. You could use other codecs here.
+    - jsonCodec:
+    
+    # Codec that logs message contents during testing/debugging - should be commented out in production
+    #- diagnosticCodec:
+
+    - KafkaTransport
+
+correlatorLogging:
+  org.apache.kafka: OFF
+  org.apache.kafka.common.utils.AppInfoParser: WARN
+  org.apache.kafka.clients.producer.ProducerConfig: WARN
+  org.apache.kafka.clients.consumer.ConsumerConfig: WARN
+  org.apache.kafka.clients.NetworkClient: WARN
