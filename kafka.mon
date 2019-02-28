@@ -1,34 +1,43 @@
 using com.softwareag.connectivity.ConnectivityPlugins;
 
-
+// Create the Event we are interested in. 
 @com.softwareag.connectivity.ExtraFieldsDict("tweet_data")
 event TwitterEvent {
 	string text;
-	string source;
-	optional<string> in_reply_to_screen_name;
 	boolean retweeted;
 	boolean is_quote_status;
-	any user;
     dictionary<any,any> tweet_data;
 }
 
-
-
+//The summary event we are publishing every 50 tweets
+event TwitterSummary {
+	integer tweet_count;
+	dictionary < string , string > wordcounts;
+}
 
 monitor Receiver {
-	constant string KAFKA_CHANNEL := "kafka:tweets";
+	//Channels for I/O
+	constant string KAFKA_INPUT_CHANNEL := "kafka:tweets";
+	constant string KAFKA_OUTPUT_CHANNEL := "kafka:summary";
+
+	//simple list of common >3 letter words to ignore. 
 	constant string ignore_words := "that they this than it's &amp; about again want were when with wont your there their these some";
 
+	//store details while we process - dictionary for word frequencies
+	integer total_tweets;
 	dictionary < string , integer > wordcounts;
+	dictionary < string , string > summary_frequencies;
 
+	//Just process messages when we load up. 
 	action onload() {
-		monitor.subscribe(KAFKA_CHANNEL);
-		
-		on all TwitterEvent() as e {			
 
+		monitor.subscribe(KAFKA_INPUT_CHANNEL);		
+		on all TwitterEvent() as e {			
+			total_tweets := total_tweets + 1;
 			// now we can store the words for later 
 			e.text := e.text.replaceAll("(","").replaceAll(")","").replaceAll("\"","").replaceAll(",","").replaceAll("'","");
 			e.text := e.text.toLower().ltrim().rtrim();
+			//want to avoid empty string so tokenize rather than split
 			sequence<string> tweet_words := " \n\t".tokenize(e.text);
 			string word;
 			for word in tweet_words {
@@ -41,20 +50,19 @@ monitor Receiver {
 				}
 			}
 
-
-			//string screen_name := <string> e.user.getEntry("screen_name");
-			//string rname := "";
-			//ifpresent e.in_reply_to_screen_name as rname {
-			//	log "(" + screen_name  + " replying to " + rname + ") " + e.text at INFO;
-			//}else {
-			//	log "(" + screen_name  + ") " + e.text at INFO;
-			//}
-			string key;
-			log "---------" at INFO;
-			for key in wordcounts.keys() {
-				if( wordcounts[key] > 10 ) {
-					log key + " : " + wordcounts[key].toString() at INFO;
+			//periodically send summary 
+			if ( total_tweets % 10 = 0) {
+				summary_frequencies.clear();
+				string key; 
+				for key in wordcounts.keys() {
+					//add if word is on more than 5% of tweets
+					if( (wordcounts[key].toFloat() / total_tweets.toFloat() ) > 0.05 )
+					{
+						summary_frequencies[key] := (wordcounts[key].toFloat()/ total_tweets.toFloat()).formatFixed(2);
+					}
 				}
+				TwitterSummary summary := TwitterSummary( total_tweets , summary_frequencies );
+				send summary to KAFKA_OUTPUT_CHANNEL;
 			}
 		}
 

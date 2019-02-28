@@ -29,7 +29,7 @@ dynamicChainManagers:
 dynamicChains:
   KafkaChain:
     - apama.eventMap:
-        # Towards-host messages will turn into EPL events of this type, although that type doesn't exist, it's just an example.
+        # Towards-host messages will turn into EPL events of this type.
         defaultEventType: TwitterEvent
         
         suppressLoopback: true
