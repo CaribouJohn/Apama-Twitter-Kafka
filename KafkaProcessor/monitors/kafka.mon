@@ -35,12 +35,14 @@ monitor Receiver {
 		on all TwitterEvent() as e {			
 			total_tweets := total_tweets + 1;
 			// now we can store the words for later 
-			e.text := e.text.replaceAll("(","").replaceAll(")","").replaceAll("\"","").replaceAll(",","").replaceAll("'","");
 			e.text := e.text.toLower().ltrim().rtrim();
+			e.text := e.text.replace("(!gi)[^A-Za-z0-9\\s]","");
+			//e.text := e.text.replaceAll("(","").replaceAll(")","").replaceAll("\"","").replaceAll(",","").replaceAll("'","");
 			//want to avoid empty string so tokenize rather than split
 			sequence<string> tweet_words := " \n\t".tokenize(e.text);
 			string word;
 			for word in tweet_words {
+				//ignore user and links  and words < 3 characters
 				if ( word.length() > 3 and word.find("@") = -1 and word.find("http") = -1 and ignore_words.find(word) = -1 ) {
 					if wordcounts.hasKey(word) {
 						wordcounts[word] := wordcounts[word] + 1;
@@ -50,7 +52,7 @@ monitor Receiver {
 				}
 			}
 
-			//periodically send summary 
+			//periodically send summary - every 10 tweets received
 			if ( total_tweets % 10 = 0) {
 				summary_frequencies.clear();
 				string key; 
@@ -58,6 +60,8 @@ monitor Receiver {
 					//add if word is on more than 5% of tweets
 					if( (wordcounts[key].toFloat() / total_tweets.toFloat() ) > 0.05 )
 					{
+						//I wanted an easy to read format in the output so I convert to strings
+						//not something I would neccesarily do in a real application
 						summary_frequencies[key] := (wordcounts[key].toFloat()/ total_tweets.toFloat()).formatFixed(2);
 					}
 				}
