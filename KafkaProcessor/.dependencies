@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <apama-project>
 	<dependency>
-		<dependencyentry path="/var/tmp/jhea/kafka/KafkaProcessor" kind="src"/>
+		<dependencyentry path="" kind="src"/>
 	</dependency>
 	<catalogs>
 		<catalog path="/var/tmp/jhea/kafka/KafkaProcessor/catalogs/Generated scenario blocks" type="block"/>
