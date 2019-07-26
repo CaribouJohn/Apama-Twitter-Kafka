@@ -7,10 +7,10 @@ from kafka import SimpleProducer, KafkaClient
 
 #twitter access tokens - see https://developer.twitter.com/en/apps 
 #these are secret keys and so need to be obtained by the user.
-access_token = "75135033-If2g9PKQzlBWForIygCFmT2i6p2shGIVpBiPUrIsh"
-access_token_secret =  "kMwcwL8Kt0gCOOUoK2Jt3OejVcim8Lfvy4E3ryixy6TDY"
-consumer_key =  "XpzResok1HeC1ktzzMlrjYGYj"
-consumer_secret =  "tTJkaUuiF4P3ITx14oZTxWIW0dKfijbSG21XMYQUuPxOMmVLoJ"
+access_token = "XXX"
+access_token_secret =  "XXX"
+consumer_key =  "XXX"
+consumer_secret =  "XXX"
 
 
 #simple class that will take the twitter stream and publish messages
